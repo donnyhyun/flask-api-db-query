@@ -1,7 +1,7 @@
 from flask import Flask
-from authentication import auth_app
-from catalog import cat_app
-from quests import quest_app
+from src.authentication import auth_app
+from src.catalog import cat_app
+from src.quests import quest_app
 
 
 app = Flask(__name__)
@@ -17,4 +17,4 @@ def hello():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.run(port=5000)

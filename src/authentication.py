@@ -6,7 +6,6 @@ db = mysql.connector.connect(
     host='db',
     user='root',
     password='root',
-    port='3306',
     database='authentication'
 )
 
@@ -38,20 +37,28 @@ def sign_in():
     data = json.loads(request.data)
     uid, name, gold, diamond = data['userid'], data['username'], data['gold'], data['diamond']
 
-    cur.execute("SELECT * FROM Users WHERE (user_id)=(%s)", [uid])
+    cur.execute("SELECT user_name FROM Users WHERE (user_id)=(%s)", [uid])
     res = cur.fetchall()
 
     if len(res) == 1:
-        # qid = quests.get_id(uid)
+        username = res[0][0]
+        if name != username:
+            return {"error_code": 404, "msg": "Another user with the same id already exists."}, 404
+
         cur.execute("SELECT quest_id FROM quest.user_quest_rewards WHERE user_id=(%s)", [uid])
         quests = cur.fetchall()
         if cur.rowcount < 1:
-            return {"error_code": 404}, 404
+            return {"error_code": 404, "msg": "User is not working on a quest."}, 404
 
         qid = quests[0][0]
+        cur.execute("UPDATE Users SET status=(%s) WHERE user_id=(%s)", ['not_new', uid])
         cur.execute("UPDATE quest.user_quest_rewards SET curr_streak=curr_streak+1 \
                               WHERE user_id=(%s) AND quest_id=(%s)", [uid, qid])
-        cur.execute("UPDATE Users SET status=(%s) WHERE user_id=(%s)", ['not_new', uid])
+        cur.execute("SELECT curr_streak FROM quest.user_quest_rewards WHERE user_id=(%s)", [uid])
+        streak = cur.fetchall()[0][0]
+        if streak == 3:
+            cur.execute("UPDATE quest.user_quest_rewards SET curr_streak=0, status=\"claimed\" \
+                                  WHERE user_id=(%s) AND quest_id=(%s)", [uid, qid])
         msg = 'Welcome Back.'
     else:
         query1 = "INSERT INTO Users (user_id, user_name, gold, diamond, status) VALUES (%s, %s, %s, %s, %s)"
