@@ -18,10 +18,9 @@ def get_user(name):
     cur.execute("SELECT * FROM Users WHERE (user_name)=(%s)", [name])
     res = cur.fetchall()
     if len(res) == 0:
-        return jsonify({'error': 'User does not exist.'}), 404
+        return jsonify({'error': 'User does not exist.'}), 400
     user = res[0]
     data = {
-        "code": 200,
         "id": user[0],
         "name": user[1],
         "gold": user[2],
@@ -43,12 +42,12 @@ def sign_in():
     if len(res) == 1:
         username = res[0][0]
         if name != username:
-            return {"error_code": 404, "msg": "Another user with the same id already exists."}, 404
+            return {"msg": "Another user with the same id already exists."}, 404
 
         cur.execute("SELECT quest_id FROM quest.user_quest_rewards WHERE user_id=(%s)", [uid])
         quests = cur.fetchall()
         if cur.rowcount < 1:
-            return {"error_code": 404, "msg": "User is not working on a quest."}, 404
+            return {"msg": "User is not working on a quest."}, 400
 
         qid = quests[0][0]
         cur.execute("UPDATE Users SET status=(%s) WHERE user_id=(%s)", ['not_new', uid])

@@ -31,9 +31,8 @@ def get_catalog():
     return {'catalog': quests}, 200
 
 
-@cat_app.route('/quest', methods=['GET'])
-def get_quest():
-    qid = request.json['quest_id']
+@cat_app.route('/quest/<qid>', methods=['GET'])
+def get_quest(qid):
     cur = db.cursor()
     cur.execute("SELECT * FROM catalog.Quests WHERE quest_id=(%s)", [qid])
     res = cur.fetchall()[0]

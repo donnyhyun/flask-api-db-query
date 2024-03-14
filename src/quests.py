@@ -13,8 +13,8 @@ quest_app = Blueprint("quest_app", __name__)
 
 @quest_app.route('/progress', methods=['GET'])
 def get_quest_progress():
-    qid = request.json['quest_id']
-    uid = request.json['user_id']
+    qid = request.args.get('qid')
+    uid = request.args.get('uid')
     cur = db.cursor()
     cur.execute("SELECT * FROM user_quest_rewards WHERE user_id=(%s) AND quest_id=(%s)", [uid, qid])
     res = cur.fetchall()
@@ -25,6 +25,6 @@ def get_quest_progress():
         "user_id": res[0],
         "quest_id": res[1],
         "status": res[2],
-        "data": res[3],
+        "date": res[3],
     }
     return {"progress": data}, 200
